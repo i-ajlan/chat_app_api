@@ -19,7 +19,7 @@ app.use(cors({
   credentials: true
 }))
 
-const token_gen = ()=>{return jwt.sign({id,username}, process.env.JWT_SECRET_KEY,{expiresIn:'5d'}) }
+const token_gen = (id, username)=>{return jwt.sign({id,username}, process.env.JWT_SECRET_KEY,{expiresIn:'5d'}) }
 
 app.get('/',(req, res)=>{
   res.send('HEllo world')
@@ -39,7 +39,7 @@ app.post('/api/v1/register',async (req, res)=>{
           throw new Error (err.message);
 
   }
-    token = token_gen()
+    token = token_gen(id, username)
     res.status(200).json({token})
 
 
@@ -60,7 +60,7 @@ app.post('/api/v1/login',async (req, res)=>{
     res.status(400).json(error);
   }
 
-  token = token_gen()
+  token = token_gen(id, username)
   res.status(200).json({token})
 })
 
