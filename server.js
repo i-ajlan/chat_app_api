@@ -69,7 +69,7 @@ app.use((req, res, next)=>{
   if ((authHeader && !authHeader.startsWith('Bearer')))
    throw new Error("Authentication Error")
   const token = authHeader.split(' ')[1]
-  const payload = jwt.verify(token, "jwt_secret_key")
+  const payload = jwt.verify(token, process.env.JWT_SECRET_KEY)
   req.user ={id: payload.id} 
   console.log(payload.id);
   next()
@@ -84,6 +84,7 @@ app.get('/api/v1/contact',async (req,res)=>{
     console.log(error)
     res.status(401).json(err)
   }
+
   console.log(data);
   res.status(200).json(data)
 })
@@ -92,12 +93,17 @@ app.post('/api/v1/contact', async (req,res)=>{
   const {name_contact, contact_id} = req.body
   const {id:user_id} = req.user 
 
-  const {data, error} = await supabase.from('contacts').insert({user_id, name_contact, contact_id}).select();
-
-    if (error){
-    console.log(err)
-    res.status(400).json(err)
+  try {
+    const {data, error} = await supabase.from('contacts').insert({user_id, name_contact, contact_id}).select();
+    if(error){
+      throw new Error(error.message)
     }
+  } catch (error) {
+     console.log("hello")
+    console.log(error)
+    // throw new Error(error.message)
+    res.status(400).json(error)
+  }
 
     res.status(200).json({ok:'ok'})
 
@@ -105,9 +111,9 @@ app.post('/api/v1/contact', async (req,res)=>{
 })
 
 
-app.use((err, req, res, next)=>{
-  res.status(400).json(err.message)
-})
+// app.use((err, req, res, next)=>{
+//   res.status(400).json(err.message)
+// })
 
 const server = createServer(app);
 const io = new Server(server,{
